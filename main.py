@@ -28,6 +28,7 @@ import time
 
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--mode', default='train', help='train/test mode')
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pwclo_model', help='Model name [default: pwclo_model]')
 
@@ -55,6 +56,7 @@ parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate fo
 FLAGS = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu)
+MODE = FLAGS.mode
 
 EPOCH_CNT = 0
 
@@ -135,7 +137,7 @@ def get_bn_decay(batch):
     bn_decay = tf.minimum(BN_DECAY_CLIP, 1 - bn_momentum)
     return bn_decay
 
-def train():
+def main(mode = 'train'):
     with tf.Graph().as_default():
         with tf.device('/gpu:'+str(GPU_INDEX)):
 
@@ -215,7 +217,7 @@ def train():
     
         if mode == 'train':
 
-            for epoch in range(200, MAX_EPOCH):
+            for epoch in range(0, MAX_EPOCH):
 
                 log_string('**** EPOCH %03d ****' % (epoch))
                 sys.stdout.flush()
@@ -600,5 +602,5 @@ def eval_one_epoch(sess, ops, test_list = range(11, 22)):
 
 if __name__ == "__main__":
     log_string('pid: %s'%(str(os.getpid())))
-    train()
+    main(MODE)
     LOG_FOUT.close()

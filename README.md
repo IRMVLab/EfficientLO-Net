@@ -33,7 +33,7 @@ to estimate and refine the pose in a coarse-to-fine approach hierarchically and 
 ## Usage
 
 #### Compile Customized TF Operators
-The TF operators are included under `tf_ops`, you need to compile them first by `make` under each ops subfolder (check `Makefile`). Update `arch` in the Makefiles for different <a href="https://en.wikipedia.org/wiki/CUDA#GPUs_supported">CUDA Compute Capability</a> that suits your GPU if necessary.
+The TF operators are included under `tf_ops`, you need to compile them first by `make` under each ops subfolder (check `fused_conv.sh`). Update `fused_conv.sh` for different <a href="https://en.wikipedia.org/wiki/CUDA#GPUs_supported">CUDA Compute Capability</a> that suits your GPU if necessary.
 
     cd ./tf_ops/2d_conv_random_k
     sh fused_conv.sh
@@ -62,7 +62,7 @@ Train the network by running
     
     sh command.sh  
 
-Please reminder to specify the `mode`(train), `GPU`,`model`(path to PWCLONet model), `data_root`,`log_dir`, `train_list`(sequences for training), `val_list`(sequences for validation) in the scripts.
+Please reminder to specify the `mode`(train), `GPU`,`model`(path to PWCLONet model), `data_root`, `log_dir`, `train_list`(sequences for training), `val_list`(sequences for validation) in the scripts.
 
 
 The training results and best model will be saved in `log_dir`.
