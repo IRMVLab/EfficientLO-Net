@@ -1,0 +1,6 @@
+model_checkpoint_path: "0.6472727272727272_t_error_model.ckpt"
+all_model_checkpoint_paths: "../epoch_110_best_model_dir/0.7509090909090909_t_error_model.ckpt"
+all_model_checkpoint_paths: "../epoch_155_best_model_dir/0.6909090909090909_t_error_model.ckpt"
+all_model_checkpoint_paths: "../epoch_160_best_model_dir/0.6681818181818181_t_error_model.ckpt"
+all_model_checkpoint_paths: "../epoch_230_best_model_dir/0.6563636363636364_t_error_model.ckpt"
+all_model_checkpoint_paths: "0.6472727272727272_t_error_model.ckpt"

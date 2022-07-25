@@ -35,10 +35,10 @@ to estimate and refine the pose in a coarse-to-fine approach hierarchically and 
 #### Compile Customized TF Operators
 The TF operators are included under `tf_ops`, you need to compile them first by `make` under each ops subfolder (check `Makefile`). Update `arch` in the Makefiles for different <a href="https://en.wikipedia.org/wiki/CUDA#GPUs_supported">CUDA Compute Capability</a> that suits your GPU if necessary.
 
-    cd ./tf_ops/sampling
-    make
-    cd ../grouping
-    make
+    cd ./tf_ops/2d_conv_random_k
+    sh fused_conv.sh
+    cd ../2d_conv_select_k
+    sh fused_conv.sh
     cd ..
 
     
@@ -85,6 +85,6 @@ Train the network by running `sh command.sh` please reminder to specify the `mod
 ### Acknowledgments
 
 We thank all the CVPR reviewers and the following open-source project for the help of the implementations:
-- [PointNet++](https://github.com/charlesq34/pointnet2) (Furthest Points Sampling and TF operators)
+- [PointNet++](https://github.com/charlesq34/pointnet2) (TF operators)
 - [KITTI_odometry_evaluation_tool](https://github.com/LeoQLi/KITTI_odometry_evaluation_tool) 
-- [HALFlowNet](https://github.com/IRMVLab/HALFlow) (Network design)
+- [PWCLO-Net](https://github.com/IRMVLab/PWCLONet) (Network design)

@@ -30,20 +30,28 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
 parser.add_argument('--model', default='pwclo_model', help='Model name [default: pwclo_model]')
-parser.add_argument('--data', default='data_preprocessing/data_processed_maxcut_35_20k_2k_8192', help='Dataset directory [default: data_preprocessing/data_processed_maxcut_35_20k_2k_8192]')
-parser.add_argument('--log_dir', default='log_train', help='Log dir [default: log_train]')
+
+parser.add_argument('--data_root', default='../', help='Dataset directory')
+parser.add_argument('--checkpoint_path', default = None, help='Path to the saved checkpoint')
+parser.add_argument('--log_dir', default='log', help='Log dir [default: log_train]')
+parser.add_argument('--result_dir', default='result', help='result dir [default: result]')
+
+parser.add_argument('--train_list', nargs='+', type=int, default=range(7), help=' List of sequences for training [default: range(7)]')
+parser.add_argument('--val_list', nargs='+', type=int, default=range(11), help=' List of sequences for validation [default: range(7, 11)]')
+parser.add_argument('--test_list', nargs='+', type=int, default=range(11), help='List of sequences for testing [default: range(11)]')
+
 parser.add_argument('--num_points', type=int, default=150000, help='Point Number total [default: 150000]')
-parser.add_argument('--num_H_input', type=int, default=64, help='Point Number H [default: 69]')
+parser.add_argument('--num_H_input', type=int, default=64, help='Point Number H [default: 64]')
 parser.add_argument('--num_W_input', type=int, default=1800, help='Point Number W [default: 1800]')
-parser.add_argument('--max_epoch', type=int, default=151, help='Epoch to run [default: 2551]')
+parser.add_argument('--max_epoch', type=int, default=1000, help='Epoch to run [default: 1000]')
 parser.add_argument('--batch_size', type=int, default=8, help='Batch Size during training [default: 16]')
 parser.add_argument('--learning_rate', type=float, default=0.001, help='Initial learning rate [default: 0.001]')
 parser.add_argument('--momentum', type=float, default=0.9, help='Initial learning rate [default: 0.9]')
 parser.add_argument('--optimizer', default='adam', help='adam or momentum [default: adam]')
 parser.add_argument('--decay_step', type=int, default=200000, help='Decay step for lr decay [default: 200000]')##########decay############3
 parser.add_argument('--decay_rate', type=float, default=0.7, help='Decay rate for lr decay [default: 0.7]')
-parser.add_argument('--data_kitti', default='KITTI_processed_occ_final', help='Dataset directory [default: data_preprocessing/data_processed_maxcut_35_20k_2k_8192]')
-################################KITTI#############
+
+
 FLAGS = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = str(FLAGS.gpu)
@@ -57,7 +65,14 @@ NUM_POINTS = FLAGS.num_points
 H_input = FLAGS.num_H_input
 W_input = FLAGS.num_W_input
 
-DATA = FLAGS.data
+DATA = FLAGS.data_root
+
+CHECKPOINT_PATH = FLAGS.checkpoint_path
+RESULT_PATH = FLAGS.result_dir
+TRAIN_LIST = FLAGS.train_list
+VAL_LIST = FLAGS.val_list
+TEST_LIST = FLAGS.test_list
+
 MAX_EPOCH = FLAGS.max_epoch
 BASE_LEARNING_RATE = FLAGS.learning_rate
 GPU_INDEX = FLAGS.gpu
@@ -65,8 +80,6 @@ MOMENTUM = FLAGS.momentum
 OPTIMIZER = FLAGS.optimizer
 DECAY_STEP = FLAGS.decay_step
 DECAY_RATE = FLAGS.decay_rate
-
-DATA_kitti = FLAGS.data_kitti
 
 MODEL = importlib.import_module(FLAGS.model) # import network module
 MODEL_FILE = os.path.join(BASE_DIR, FLAGS.model+'.py')
@@ -92,9 +105,8 @@ BN_DECAY_DECAY_RATE = 0.5
 BN_DECAY_DECAY_STEP = float(DECAY_STEP)
 BN_DECAY_CLIP = 0.99
 
-TRAIN_DATASET = kitti_dataset.SceneflowDataset(DATA, NUM_POINTS = NUM_POINTS, H_input = H_input, W_input = W_input, train = 0)
-TEST_DATASET = kitti_dataset.SceneflowDataset(DATA, NUM_POINTS = NUM_POINTS, H_input = H_input, W_input = W_input, train = 1)
-######################################KITTI##########################################################################3
+TRAIN_DATASET = kitti_dataset.OdometryDataset(DATA, NUM_POINTS = NUM_POINTS, H_input = H_input, W_input = W_input)
+TEST_DATASET = kitti_dataset.OdometryDataset(DATA, NUM_POINTS = NUM_POINTS, H_input = H_input, W_input = W_input)
 
 
 
@@ -167,7 +179,6 @@ def train():
         # Create a session
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-        config.gpu_options.per_process_gpu_memory_fraction = 0.5
         config.allow_soft_placement = True
         config.log_device_placement = False
         sess = tf.Session(config=config)
@@ -175,15 +186,18 @@ def train():
         # Add summary writers
         merged = tf.summary.merge_all()
         train_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'train'), sess.graph)
-        test_writer = tf.summary.FileWriter(os.path.join(LOG_DIR, 'test'), sess.graph)
 
         # Init variables
-        # init = tf.global_variables_initializer()
-        # sess.run(init)
 
-        model_path = os.path.join('FIX_BUG_kitti_drop_2022_04_24_14_13_51/epoch_325_best_model_dir', "0.6472727272727272_t_error_model.ckpt")
-        saver.restore(sess, model_path)
-        log_string ("model restored")
+        if CHECKPOINT_PATH != None:
+            model_path = CHECKPOINT_PATH
+            saver.restore(sess, model_path)
+            log_string ("model restored")
+
+        else:
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            log_string ("Initialize model")
         
         ops = {'pointclouds_pl': pointclouds,
                'pred_q': l0_q,
@@ -199,36 +213,46 @@ def train():
                'step': batch,
                }
     
-        min_eval_error = 1000
+        if mode == 'train':
 
-        for epoch in range(0, 1):
-            log_string('**** EPOCH %03d ****' % (epoch))
-            sys.stdout.flush()
-            # func()
-            # train_one_epoch(sess, ops, train_writer)
-            cur_eval_error = eval_one_epoch(sess, ops)
+            for epoch in range(200, MAX_EPOCH):
 
-            # if epoch % 20 == 0 and epoch <= 100:
+                log_string('**** EPOCH %03d ****' % (epoch))
+                sys.stdout.flush()
+                train_one_epoch(sess, ops, train_writer, train_list = TRAIN_LIST)
 
-            #     cur_eval_error = eval_one_epoch(sess, ops)
-                
-            #     if cur_eval_error < min_eval_error:
-            #         min_eval_error = cur_eval_error
-            #         save_dir = os.path.join(LOG_DIR, 'epoch_' + str(epoch) + '_best_model_dir')
-            #         os.mkdir(save_dir)
-            #         save_path = saver.save(sess, os.path.join(save_dir, str(cur_eval_error)+"_t_error_model.ckpt"))
-            #         log_string("Model saved in file: %s" % save_path)
 
-            # if epoch % 5 == 0 and epoch > 100:
+                if epoch % 20 == 0 and epoch <= 100:
 
-            #     cur_eval_error = eval_one_epoch(sess, ops)
-                
-            #     if cur_eval_error < min_eval_error:
-            #         min_eval_error = cur_eval_error
-            #         save_dir = os.path.join(LOG_DIR, 'epoch_' + str(epoch) + '_best_model_dir')
-            #         os.mkdir(save_dir)
-            #         save_path = saver.save(sess, os.path.join(save_dir, str(cur_eval_error)+"_t_error_model.ckpt"))
-            #         log_string("Model saved in file: %s" % save_path)
+                    cur_eval_error = eval_one_epoch(sess, ops, test_list = VAL_LIST)
+                    
+                    if cur_eval_error < min_eval_error:
+                        min_eval_error = cur_eval_error
+                        save_dir = os.path.join(LOG_DIR, 'epoch_' + str(epoch) + '_best_model_dir')
+                        os.mkdir(save_dir)
+                        save_path = saver.save(sess, os.path.join(save_dir, str(cur_eval_error)+"_t_error_model.ckpt"))
+                        log_string("Model saved in file: %s" % save_path)
+
+
+
+                if epoch % 2 == 0 and epoch > 100:
+
+                    cur_eval_error = eval_one_epoch(sess, ops, test_list = VAL_LIST)
+                    
+                    if cur_eval_error < min_eval_error:
+                        min_eval_error = cur_eval_error
+                        save_dir = os.path.join(LOG_DIR, 'epoch_' + str(epoch) + '_best_model_dir')
+                        os.mkdir(save_dir)
+                        save_path = saver.save(sess, os.path.join(save_dir, str(cur_eval_error)+"_t_error_model.ckpt"))
+                        log_string("Model saved in file: %s" % save_path)
+
+        elif mode == 'test':
+
+            if CHECKPOINT_PATH != None:
+                eval_one_epoch(sess, ops, test_list = TEST_LIST)
+                log_string("Finished! Please check the result directory! ")
+            else:
+                log_string('Please verify the checkpoint for testing !!!')
 
 def DataAugmentation():
 

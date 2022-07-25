@@ -18,11 +18,10 @@ CMAP = 'plasma'
 
 np.set_printoptions(threshold=1e10)
 
-class SceneflowDataset():
+class OdometryDataset():
 
-    def __init__(self, root='/tmp/data_odometry_velodyne/dataset', NUM_POINTS = 150000, H_input = 64, W_input = 1800, train=True):
+    def __init__(self, root='/tmp/data_odometry_velodyne/dataset', NUM_POINTS = 150000, H_input = 64, W_input = 1800):
         
-        self.train = train
         self.num_points = NUM_POINTS
         self.datapath = root
 
@@ -47,7 +46,7 @@ class SceneflowDataset():
                     cur_idx_pc1 = 0
                 
                 else:
-                    cur_idx_pc1 = cur_idx_pc2 - 1        ###############    1 frame gap  ###############   
+                    cur_idx_pc1 = cur_idx_pc2 - 1     
                 break        
 
         
@@ -69,11 +68,8 @@ class SceneflowDataset():
         else:
             pose = np.load('ground_truth_pose/kitti_T_diff/' + self.file_map[cur_seq] + '_diff.npy')
 
-        print(pc2_bin)
 
-        ###################################################### read the points & pose ##########################
-        
-
+        ## read the points & pose 
         point1 = np.fromfile(pc1_bin, dtype=np.float32).reshape(-1, 4)
         point2 = np.fromfile(pc2_bin, dtype=np.float32).reshape(-1, 4)
 
@@ -100,16 +96,6 @@ class SceneflowDataset():
 
         T_gt = np.matmul(Tr_inv, T_diff)
         T_gt = np.matmul(T_gt, Tr)
-#################################################################   Change the coordinate system  ###################################################
-
-
-##################################################################################################################
-        
-        # R_gt = T_gt[:3, :3]
-        # t_gt = T_gt[:3, 3:]
-
-        # z_gt, y_gt, x_gt = self.mat2euler( M = R_gt)
-        # q_gt = self.euler2quat(z = z_gt, y = y_gt, x = x_gt)
 
         return pos2, pos1, n2, n1, T_gt
 
@@ -219,113 +205,6 @@ class SceneflowDataset():
                         cx*cz*sy - sx*cy*sz,
                         cx*cy*sz + sx*cz*sy])
 
-
-
-if __name__ == '__main__':
-
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-    for i in range(11):
-
-        gt_path = str(i).zfill(2) + '_diff.txt'
-    
-        gt_test = np.loadtxt(gt_path)
-
-        out_dir = 'ground_truth_pose/kitti_T_diff'
-
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-
-        save_path = os.path.join(out_dir, str(i).zfill(2) + '_diff.npy')
-
-        np.save(save_path, gt_test)
-
-
-    # print(data_test.shape)
-    # print(data_test[1100:1110, :])
-
-
-    # dataset = SceneflowDataset( H_input = 64, W_input = 1000, train=1)
-    
-    # txt_list = [ '804', '1117', '205', '429', '511']
-
-    # T_trans = np.array([[0, 0, 1, 0],
-    #                     [-1, 0, 0, 0],
-    #                     [0, -1, 0, 0],
-    #                     [0, 0, 0, 1]])
-
-    # for i_dir in txt_list[0:1]:
-
-    #     bin_dir = os.path.join(BASE_DIR, 'pre_' + i_dir)
-        
-    #     out_dir = os.path.join(BASE_DIR, 'out_' + i_dir)
-
-    #     if not os.path.exists(out_dir):
-    #         os.mkdir(out_dir)
-
-    #     bin_list = os.listdir(bin_dir)
-    #     bin_list.sort()
-
-    #     # for i in range(len(bin_list)):
-    #     for i in range(1):
-
-    #         out_path = os.path.join(out_dir, bin_list[i])
-    #         p_path = os.path.join(bin_dir, bin_list[i])
-
-    #         point_cloud = np.fromfile(out_path, dtype=np.float).reshape(-1, 3)
-
-    #         np.savetxt('testfloat.txt', point_cloud)
-
-            # print(point_cloud.shape)
-
-            # num_point = 90000
-            # n = point_cloud.shape[0]
-
-            # pos = np.zeros((num_point, 3))
-            
-            # if n > num_point:
-            #     print('n > 90000!!')
-            #     pos = point_cloud[:num_point, :3]
-            # else:
-            #     pos[:n, :3] = point_cloud[:, :3]
-
-            
-            # add = np.ones((num_point, 1))
-            # pos = np.concatenate([pos, add], axis = -1)
-
-
-            # pos = np.matmul(T_trans, pos.T)
-
-            # pos = pos.T[:, :3]
-
-            # print (pos.dtype)
-
-
-
-            # # pos.tofile(out_path)
-
-            # if i % 100 == 0:
-            #     print(i)
-
-
-
-
-
-
-
-
-
-
-    # start_time = time.time()
-
-
-    # for i in range(92213, 117709):
-    #     pos2, pos1, n2, n1, T_gt = dataset[i]########################################
-
-
-    # end_time = time.time()
-
-    # print('read_season_time: ', end_time - start_time)
 
 
 
