@@ -51,14 +51,17 @@ class OdometryDataset():
 
         
 
-        Tr_path = os.path.join( 'data_odometry_calib/dataset/sequences', str(cur_seq).zfill(2), 'calib.txt')
+
+        cur_lidar_dir = os.path.join(self.datapath, self.file_map[cur_seq])
+
+        Tr_path = os.path.join(cur_lidar_dir, 'calib.txt')
         Tr_data = self.read_calib_file(Tr_path)
         Tr_data = Tr_data['Tr']
         Tr = Tr_data.reshape(3,4)
         Tr = np.vstack((Tr, np.array([0, 0, 0, 1.0])))
         Tr_inv = np.linalg.inv(Tr)### 
 
-        cur_lidar_dir = os.path.join(self.datapath, self.file_map[cur_seq])
+
 
         pc1_bin = os.path.join(cur_lidar_dir, 'velodyne/' + str(cur_idx_pc1).zfill(6) + '.bin')
         pc2_bin = os.path.join(cur_lidar_dir, 'velodyne/' + str(cur_idx_pc2).zfill(6) + '.bin')

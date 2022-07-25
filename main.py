@@ -472,7 +472,7 @@ def eval_one_epoch(sess, ops, test_list = range(11, 22)):
             24122, 25183, 28464, 29095, 30996, 32727, 33218, 35019, 40000, 40831, 43552]         
 
 
-        Tr_path = os.path.join( 'data_odometry_calib/dataset/sequences', str(ii).zfill(2), 'calib.txt')
+        Tr_path = os.path.join(DATA, str(ii).zfill(2), 'calib.txt')
         Tr_data = read_calib_file(Tr_path)
         Tr_data = Tr_data['Tr']
         Tr = Tr_data.reshape(3,4)
