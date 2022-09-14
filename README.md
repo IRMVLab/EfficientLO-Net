@@ -1,6 +1,6 @@
 **EfficientLO-Net: Efficient 3D Deep LiDAR Odometry (PAMI 2022)**
 ==============================================================================================================================
-This is the official implementation of "EfficientLO-Net: Efficient 3D Deep LiDAR Odometry" created by Guangming Wang, Xinrui Wu, Shuyang Jiang, Zhe Liu and Hesheng Wang.
+This is the official implementation of "[**EfficientLO-Net: Efficient 3D Deep LiDAR Odometry**](https://arxiv.org/abs/2111.02135)" created by Guangming Wang, Xinrui Wu, Shuyang Jiang, Zhe Liu and Hesheng Wang.
 ![](doc/network.png)
 
 ## Citation
