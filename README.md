@@ -13,7 +13,9 @@ docker pull ufoym/deepo:all-py36-cu102
 
 ```shell
 cd pointnet2
-python setup.py install
+python setup.py install && cd..
+cd ops_pytorch/fused_conv_random_k && python setup.py install && cd../..
+cd ops_pytorch/fused_conv_select_k && python setup.py install && cd../..
 ```
 
 ```shell
