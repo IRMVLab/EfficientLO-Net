@@ -8,7 +8,15 @@ This is the official implementation of "[**EfficientLO-Net: Efficient 3D Deep Li
 ## Citation
 If you find our work useful in your research, please cite:
 
-        @ARTICLE{wang2023efficient, author={Wang, Guangming and Wu, Xinrui and Jiang, Shuyang and Liu, Zhe and Wang, Hesheng}, journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, title={Efficient 3D Deep LiDAR Odometry}, year={2023}, volume={45}, number={5}, pages={5749-5765}, doi={10.1109/TPAMI.2022.3207015}}
+        @ARTICLE{wang2023efficient,
+        author={Wang, Guangming and Wu, Xinrui and Jiang, Shuyang and Liu, Zhe and Wang, Hesheng},
+        journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+        title={Efficient 3D Deep LiDAR Odometry},
+        year={2023},
+        volume={45},
+        number={5},
+        pages={5749-5765},
+        doi={10.1109/TPAMI.2022.3207015}}
 
 
 
